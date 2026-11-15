@@ -1,0 +1,2044 @@
+<!DOCTYPE html>
+
+<html lang="es">
+
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<style type="text/css">
+html, body {
+  width: 100%;
+  height: 100%;
+}
+h1 {
+	font-family: Arial, Helvetica, sans-serif;
+	color: #962300;
+	font-size: 25px;
+}
+p {
+	font-family: Arial, Helvetica, sans-serif;
+	color: #777;
+	font-size: 12px;
+}
+body {
+  background-color: #1d1d1d;
+  margin: 0;
+  padding: 0;
+  overflow: hidden;
+}
+#game-container {
+  position: fixed;
+  inset: 0;
+  width: 100vw;
+  height: 100vh;
+  isolation: isolate;
+  overflow: hidden;
+  -webkit-user-select: none;
+}
+#MMFCanvas {
+  position: absolute;
+  inset: 0;
+  display: block;
+  width: 100%;
+  height: 100%;
+  max-width: none;
+  max-height: none;
+}
+#game-container[data-mod-ui-hidden="true"] .mod-ui {
+  display: none !important;
+}
+.MMFDiv {
+  position: relative;
+  z-index: 0;
+  width: 100%;
+  height: 100%;
+}
+#loading {
+  position: absolute;
+  inset: 0;
+  z-index: 40;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  background: #1d1d1d;
+  color: #ddd;
+  font: 16px Arial, Helvetica, sans-serif;
+}
+#loading[hidden] {
+  display: none;
+}
+#loading progress {
+  width: min(360px, 70vw);
+  accent-color: #962300;
+}
+#credits-button {
+  position: absolute;
+  top: max(16px, env(safe-area-inset-top));
+  right: max(16px, env(safe-area-inset-right));
+  z-index: 20;
+  pointer-events: auto;
+  padding: 10px 18px;
+  border: 1px solid #bc5434;
+  border-radius: 4px;
+  background: #261713;
+  color: #fff;
+  font: bold 15px Arial, Helvetica, sans-serif;
+  cursor: pointer;
+}
+#credits-button:hover,
+#credits-button:focus-visible {
+  background: #71341f;
+}
+#credits[hidden],
+#credits-button[hidden] {
+  display: none;
+}
+#credits {
+  position: absolute;
+  inset: 0;
+  z-index: 30;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+  box-sizing: border-box;
+  background: rgb(0 0 0 / 78%);
+  color: #eee;
+  font-family: Arial, Helvetica, sans-serif;
+}
+#credits-panel {
+  position: relative;
+  width: min(520px, 100%);
+  max-height: 100%;
+  overflow: auto;
+  box-sizing: border-box;
+  padding: 32px;
+  border: 1px solid #71341f;
+  background: #171311;
+  text-align: center;
+}
+#credits-panel h1 {
+  margin: 0 0 24px;
+}
+#credits-panel p {
+  color: #ddd;
+  font-size: 15px;
+  line-height: 1.6;
+}
+#credits-close {
+  position: absolute;
+  top: 8px;
+  right: 10px;
+  border: 0;
+  background: transparent;
+  color: #eee;
+  font-size: 24px;
+  cursor: pointer;
+}
+#credits-music-status {
+  min-height: 1.2em;
+}
+#dev-console {
+  position: absolute;
+  inset: auto 0 0;
+  z-index: 50;
+  max-height: 45vh;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  box-sizing: border-box;
+  padding: 12px;
+  background: rgb(10 10 10 / 96%);
+  color: #eee;
+  font: 14px Consolas, monospace;
+}
+#dev-console[hidden] {
+  display: none;
+}
+#dev-console-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  color: #e78b62;
+  font-weight: bold;
+}
+#dev-console-close {
+  border: 0;
+  background: transparent;
+  color: #eee;
+  font-size: 20px;
+  cursor: pointer;
+}
+#dev-console-output {
+  min-height: 72px;
+  max-height: 30vh;
+  overflow: auto;
+  margin: 0;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+#dev-console-form {
+  display: flex;
+  gap: 8px;
+}
+#dev-console-input {
+  flex: 1;
+  min-width: 0;
+  padding: 8px;
+  border: 1px solid #71341f;
+  background: #1d1d1d;
+  color: #fff;
+  font: inherit;
+}
+#mod-overlays {
+  position: absolute;
+  inset: 72px auto auto 16px;
+  z-index: 25;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  max-width: min(360px, calc(100vw - 32px));
+  pointer-events: none;
+  font: 14px Arial, Helvetica, sans-serif;
+}
+.mod-overlay {
+  padding: 12px;
+  border: 1px solid #71341f;
+  background: rgb(23 19 17 / 94%);
+  color: #eee;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+.mod-overlay strong {
+  display: block;
+  margin-bottom: 5px;
+  color: #e78b62;
+}
+#mod-notice {
+  position: absolute;
+  top: 72px;
+  left: 50%;
+  z-index: 35;
+  max-width: min(520px, calc(100vw - 32px));
+  transform: translateX(-50%);
+  padding: 10px 16px;
+  border: 1px solid #bc5434;
+  background: #171311;
+  color: #fff;
+  font: 14px Arial, Helvetica, sans-serif;
+}
+#mod-notice[hidden] {
+  display: none;
+}
+#custom-night[hidden],
+#custom-scare[hidden],
+#custom-map[hidden] {
+  display: none;
+}
+#custom-night,
+#custom-scare {
+  position: absolute;
+  inset: 0;
+  z-index: 45;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 18px;
+  box-sizing: border-box;
+  background: rgb(0 0 0 / 88%);
+  color: #eee;
+  font: 14px Arial, Helvetica, sans-serif;
+}
+#custom-night-panel {
+  position: relative;
+  width: min(660px, 100%);
+  max-height: 100%;
+  overflow: auto;
+  box-sizing: border-box;
+  padding: 24px;
+  border: 1px solid #71341f;
+  background: #171311;
+}
+#custom-night-panel h2 {
+  margin: 0 0 18px;
+  color: #e78b62;
+}
+#custom-night-list,
+#custom-modifiers {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
+  gap: 10px 18px;
+  margin-bottom: 18px;
+}
+.custom-night-slider {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 4px 12px;
+  align-items: center;
+  padding: 8px;
+  background: #241d1a;
+}
+.custom-night-slider input {
+  grid-column: 1 / -1;
+  width: 100%;
+  accent-color: #bc5434;
+}
+.custom-night-modifier {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+#custom-night-actions {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: 10px;
+}
+#custom-night-actions button,
+#custom-night-button {
+  padding: 9px 14px;
+  border: 1px solid #bc5434;
+  background: #261713;
+  color: #fff;
+  font: bold 14px Arial, Helvetica, sans-serif;
+  cursor: pointer;
+}
+#mod-toolbox-button {
+  position: absolute;
+  top: max(16px, env(safe-area-inset-top));
+  left: max(16px, env(safe-area-inset-left));
+  z-index: 20;
+  padding: 10px 18px;
+  border: 1px solid #bc5434;
+  border-radius: 4px;
+  background: #261713;
+  color: #fff;
+  font: bold 15px Arial, Helvetica, sans-serif;
+  cursor: pointer;
+}
+#mod-toolbox-button[hidden] {
+  display: none;
+}
+#mod-toolbox[hidden] {
+  display: none;
+}
+#mod-toolbox {
+  position: absolute;
+  inset: 0;
+  z-index: 44;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 18px;
+  box-sizing: border-box;
+  background: rgb(0 0 0 / 82%);
+  color: #eee;
+  font: 14px Arial, Helvetica, sans-serif;
+}
+#mod-toolbox-panel {
+  position: relative;
+  width: min(680px, 100%);
+  max-height: 100%;
+  overflow: auto;
+  box-sizing: border-box;
+  padding: 24px;
+  border: 1px solid #71341f;
+  background: #171311;
+}
+#mod-toolbox-panel h2,
+.mod-toolbox-category h3 {
+  color: #e78b62;
+}
+.mod-toolbox-category {
+  margin: 14px 0;
+}
+.mod-toolbox-category-items {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+.mod-toolbox-category button,
+#mod-toolbox-close {
+  padding: 8px 12px;
+  border: 1px solid #71341f;
+  background: #261713;
+  color: #fff;
+  cursor: pointer;
+}
+#mod-toolbox-close {
+  position: absolute;
+  top: 16px;
+  right: 16px;
+  font-size: 20px;
+}
+#custom-night-button {
+  position: absolute;
+  top: max(16px, env(safe-area-inset-top));
+  right: max(130px, calc(env(safe-area-inset-right) + 115px));
+  z-index: 20;
+}
+#custom-night-button[hidden] {
+  display: none;
+}
+#custom-night-status {
+  min-height: 1.2em;
+  color: #e78b62;
+}
+#custom-scare {
+  z-index: 60;
+  background: #000;
+  text-align: center;
+}
+#custom-scare img {
+  max-width: min(90vw, 90vh);
+  max-height: 80vh;
+  object-fit: contain;
+}
+#custom-scare-title {
+  position: absolute;
+  bottom: 8%;
+  left: 0;
+  width: 100%;
+  color: #fff;
+  font-size: clamp(24px, 6vw, 64px);
+  font-weight: bold;
+  text-shadow: 0 2px 8px #000;
+}
+#custom-map {
+  position: absolute;
+  right: 16px;
+  bottom: 16px;
+  z-index: 25;
+  width: min(280px, 40vw);
+  max-height: 35vh;
+  overflow: auto;
+  padding: 12px;
+  border: 1px solid #71341f;
+  background: rgb(10 10 10 / 90%);
+  color: #eee;
+  font: 13px Consolas, monospace;
+}
+#custom-map[hidden] {
+  display: none;
+}
+#custom-map h2 {
+  margin: 0 0 8px;
+  color: #e78b62;
+  font-size: 15px;
+}
+.custom-map-marker {
+  padding: 5px 0;
+  border-top: 1px solid #43332d;
+}
+.custom-animatronic {
+  position: absolute;
+  left: 50%;
+  bottom: 12%;
+  z-index: 15;
+  max-width: 40vw;
+  max-height: 50vh;
+  transform: translateX(-50%);
+  object-fit: contain;
+  pointer-events: none;
+}
+#custom-game-overlay {
+  position: absolute;
+  inset: 0;
+  z-index: 18;
+  pointer-events: none;
+}
+#game-container[data-camera-effect="vhs"] #MMFCanvas {
+  filter: contrast(1.12) saturate(.8);
+}
+#game-container[data-camera-effect="night-vision"] #MMFCanvas {
+  filter: grayscale(1) sepia(1) hue-rotate(70deg) saturate(3) contrast(1.3);
+}
+#game-container[data-camera-effect="distortion"] #MMFCanvas {
+  filter: contrast(1.3) saturate(1.5);
+  animation: camera-distortion .18s steps(2) infinite;
+}
+@keyframes camera-distortion {
+  50% { transform: translateX(2px); }
+}
+#game-container[data-flashing="true"]::after {
+  position: absolute;
+  inset: 0;
+  z-index: 16;
+  background: #fff;
+  content: "";
+  opacity: .14;
+  pointer-events: none;
+  animation: camera-flash .5s steps(2) infinite;
+}
+@keyframes camera-flash {
+  50% { opacity: 0; }
+}
+#bloctxt {
+	border-left-width: 5px;
+	border-left-style: solid;
+	border-left-color: #962300;
+	padding-left: 10px;
+	position: absolute;
+	top:5%;
+	left: 50%;
+	width: 600px;
+	margin-left: -260px
+}
+</style>
+
+  <title>FNAF3 WINT MODS remix</title>
+  <link rel="icon" type="image/png" href="ico.png" />
+  <link rel="preload" href="resources/fnaf%203.cch" as="fetch" crossorigin />
+  <link rel="preload" href="resources/fnaf%203.cc1" as="fetch" crossorigin />
+
+	<script>
+	   	// Detection of old browsers that do not support the canvas element
+		// Falls back to a default page
+	    if (!document.createElement("canvas").getContext)
+	    {
+			window.open("http://www.clickteam.com/html5-fallback", "_self");
+		}
+	</script>
+	
+  <script>
+    (function () {
+      const canPlayType = HTMLMediaElement.prototype.canPlayType;
+      HTMLMediaElement.prototype.canPlayType = function (type) {
+        if (/^audio\//i.test(type) && !/^audio\/mpeg(?:;|$)/i.test(type)) {
+          return "";
+        }
+        return canPlayType.call(this, type);
+      };
+    })();
+  </script>
+
+  <script>
+    (function () {
+      const selectedAudio =
+        /\/(?:0031|0033|0034|0035|0036|0037)\.mp3(?:[?#]|$)/i;
+      const selectedRequests = new WeakMap();
+      const selectedResponses = new WeakSet();
+      const selectedBuffers = new WeakSet();
+      const selectedSources = new WeakSet();
+      const sourceByGain = new WeakMap();
+      const activePanners = new Set();
+
+      let pointerPan = 0;
+      function updatePointerPan(event) {
+        const canvas = document.getElementById("MMFCanvas");
+        if (!canvas || (event.target !== canvas && !canvas.contains(event.target))) {
+          return;
+        }
+
+        const bounds = canvas.getBoundingClientRect();
+        pointerPan = event.clientX - bounds.left > bounds.width / 2 ? -1 : 0;
+        activePanners.forEach(function (panner) {
+          panner.pan.value = pointerPan;
+        });
+      }
+
+      document.addEventListener("pointermove", updatePointerPan, true);
+      document.addEventListener("pointerleave", function () {
+        pointerPan = 0;
+        activePanners.forEach(function (panner) {
+          panner.pan.value = 0;
+        });
+      }, true);
+      window.addEventListener("blur", function () {
+        pointerPan = 0;
+        activePanners.forEach(function (panner) {
+          panner.pan.value = 0;
+        });
+      });
+
+      const open = XMLHttpRequest.prototype.open;
+      XMLHttpRequest.prototype.open = function (method, url) {
+        selectedRequests.set(this, selectedAudio.test(String(url)));
+        return open.apply(this, arguments);
+      };
+
+      const response = Object.getOwnPropertyDescriptor(
+        XMLHttpRequest.prototype,
+        "response"
+      );
+      if (response && response.get && response.configurable) {
+        Object.defineProperty(XMLHttpRequest.prototype, "response", {
+          configurable: response.configurable,
+          enumerable: response.enumerable,
+          get: function () {
+            const data = response.get.call(this);
+            if (selectedRequests.get(this) && data instanceof ArrayBuffer) {
+              selectedResponses.add(data);
+            }
+            return data;
+          }
+        });
+      }
+
+      const decode = BaseAudioContext.prototype.decodeAudioData;
+      BaseAudioContext.prototype.decodeAudioData = function (
+        data,
+        onSuccess,
+        onError
+      ) {
+        const isSelected = selectedResponses.has(data);
+        const markSelected = function (buffer) {
+          if (isSelected) {
+            selectedBuffers.add(buffer);
+          }
+          return buffer;
+        };
+        if (typeof onSuccess === "function") {
+          return decode.call(
+            this,
+            data,
+            function (buffer) {
+              markSelected(buffer);
+              onSuccess(buffer);
+            },
+            onError
+          );
+        }
+        const result = decode.call(this, data, undefined, onError);
+        return result && typeof result.then === "function"
+          ? result.then(markSelected)
+          : result;
+      };
+
+      const buffer = Object.getOwnPropertyDescriptor(
+        AudioBufferSourceNode.prototype,
+        "buffer"
+      );
+      if (buffer && buffer.get && buffer.set && buffer.configurable) {
+        Object.defineProperty(AudioBufferSourceNode.prototype, "buffer", {
+          configurable: buffer.configurable,
+          enumerable: buffer.enumerable,
+          get: function () {
+            return buffer.get.call(this);
+          },
+          set: function (value) {
+            buffer.set.call(this, value);
+            if (selectedBuffers.has(value)) {
+              selectedSources.add(this);
+            }
+          }
+        });
+      }
+
+      const connect = AudioNode.prototype.connect;
+      AudioNode.prototype.connect = function (destination) {
+        if (
+          selectedSources.has(this) &&
+          destination instanceof GainNode
+        ) {
+          sourceByGain.set(destination, this);
+        }
+
+        const source = sourceByGain.get(this);
+        if (source && destination === this.context.destination) {
+          // Downmix first so a negative X coordinate is centered mono.
+          this.channelCount = 1;
+          this.channelCountMode = "explicit";
+
+          const panner = this.context.createStereoPanner();
+          panner.pan.value = pointerPan;
+          activePanners.add(panner);
+          source.addEventListener("ended", function () {
+            activePanners.delete(panner);
+          }, { once: true });
+
+          connect.call(this, panner);
+          return connect.call(panner, destination);
+        }
+
+        return connect.apply(this, arguments);
+      };
+    })();
+  </script>
+
+  <!-- EXTRASOURCES -->
+  	<script src="src/Runtime.js"></script>
+    <script src="src/RuntimeExtensions.js"></script>
+  	
+  <script>
+
+	// Detects if the html file is ran locally.
+	// You can remove this code for the final version
+	if (window.location.protocol == "file:")
+	{
+		document.write('<div id="bloctxt">');
+		document.write('<h1>The application cannot be run...</h1>');
+		document.write('<p>HTML browsers do not allow you to launch data files directly from the file system.<br>');
+		document.write('A drag & drop of the html file on a web-browser window will not work, on any machine.<br>');
+		document.write('Please use the Build & Run option (it opens a local web server) to run your application,<br>') 
+		document.write('or upload your application folder to a remote web-server, and start it from there...</p>');
+		document.write('</div>');
+		throw new error("Cannot run application");
+	}
+  </script>
+</head>
+
+<!-- This is where we create the Canvas element that will contain the application...-->
+<body>
+    <div id="game-container">
+      <canvas id="MMFCanvas" width="1024" height="768">
+        Your browser does not support Canvas.
+      </canvas>
+      <div id="loading" role="status" aria-live="polite">
+        <span id="loading-message">Preparando el audio del juego...</span>
+        <progress id="loading-progress" value="0" max="64"></progress>
+      </div>
+      <button id="credits-button" class="mod-ui" type="button" aria-haspopup="dialog" hidden>
+        Créditos
+      </button>
+      <button id="mod-toolbox-button" class="mod-ui" type="button" hidden>Contenido de mods</button>
+      <button id="custom-night-button" class="mod-ui" type="button" hidden>Custom Night</button>
+      <section id="credits" class="mod-ui" role="dialog" aria-modal="true"
+        aria-labelledby="credits-title" hidden>
+        <div id="credits-panel">
+          <button id="credits-close" type="button" aria-label="Cerrar créditos">
+            &times;
+          </button>
+          <h1 id="credits-title">Créditos</h1>
+          <p><strong>Motor:</strong> Pacure</p>
+          <p><strong>Mod:</strong> Pacure</p>
+          <p><strong>Launcher del mod:</strong> Pacure</p>
+          <p><strong>Música de los créditos:</strong><br>
+            The Final Night at Freddy's Remix</p>
+          <p id="credits-music-status" aria-live="polite"></p>
+          <audio id="credits-music" preload="none">
+            <source
+              src="resources/credito/The_Final_Night_at_Freddys_Remix.mp3"
+              type="audio/mpeg">
+          </audio>
+        </div>
+      </section>
+      <section id="custom-night" class="mod-ui" role="dialog" aria-modal="true"
+        aria-labelledby="custom-night-title" hidden>
+        <div id="custom-night-panel">
+          <h2 id="custom-night-title">Custom Night</h2>
+          <p>Configura la agresividad de los animatrónicos y los modificadores.</p>
+          <div id="custom-night-list"></div>
+          <h3>Sistemas y desafíos</h3>
+          <div id="custom-modifiers"></div>
+          <p id="custom-night-status" aria-live="polite"></p>
+          <div id="custom-night-actions">
+            <button id="custom-night-close" type="button">Cerrar</button>
+            <button id="custom-night-start" type="button">Iniciar desafío</button>
+          </div>
+        </div>
+      </section>
+      <section id="mod-toolbox" class="mod-ui" role="dialog" aria-modal="true"
+        aria-labelledby="mod-toolbox-title" hidden>
+        <div id="mod-toolbox-panel">
+          <button id="mod-toolbox-close" type="button" aria-label="Cerrar contenido de mods">
+            &times;
+          </button>
+          <h2 id="mod-toolbox-title">Contenido de mods</h2>
+          <p>Prueba contenido registrado. Los mods activos reciben los eventos.</p>
+          <div id="mod-toolbox-content"></div>
+        </div>
+      </section>
+      <section id="custom-scare" class="mod-ui" role="alertdialog" aria-modal="true" hidden>
+        <img id="custom-scare-image" alt="" hidden>
+        <span id="custom-scare-title"></span>
+      </section>
+      <section id="custom-map" class="mod-ui" aria-live="polite" hidden>
+        <h2>Radar de mods</h2>
+        <div id="custom-map-markers"></div>
+      </section>
+      <div id="custom-game-overlay" class="mod-ui" aria-live="polite"></div>
+      <div id="mod-overlays" class="mod-ui" aria-live="polite"></div>
+      <div id="mod-notice" class="mod-ui" role="status" hidden></div>
+      <section id="dev-console" class="mod-ui" aria-label="Consola de desarrollo" hidden>
+        <div id="dev-console-header">
+          <span>Consola FNAF3 - escribe help para ver comandos</span>
+          <button id="dev-console-close" type="button" aria-label="Cerrar consola">
+            &times;
+          </button>
+        </div>
+        <pre id="dev-console-output" aria-live="polite"></pre>
+        <form id="dev-console-form">
+          <input id="dev-console-input" type="text" autocomplete="off"
+            spellcheck="false" aria-label="Comando">
+        </form>
+      </section>
+    </div>
+    <script src="qrc:///qtwebchannel/qwebchannel.js"></script>
+    <script>
+      (function () {
+        const button = document.getElementById("credits-button");
+        const dialog = document.getElementById("credits");
+        const closeButton = document.getElementById("credits-close");
+        const music = document.getElementById("credits-music");
+        const status = document.getElementById("credits-music-status");
+
+        function closeCredits() {
+          dialog.hidden = true;
+          music.pause();
+          music.currentTime = 0;
+          button.focus();
+        }
+
+        button.addEventListener("click", function () {
+          dialog.hidden = false;
+          closeButton.focus();
+          music.play().then(function () {
+            status.textContent = "Reproduciendo música de los créditos.";
+          }).catch(function () {
+            status.textContent =
+              "No se pudo reproducir la música de los créditos.";
+          });
+        });
+
+        closeButton.addEventListener("click", closeCredits);
+        dialog.addEventListener("click", function (event) {
+          if (event.target === dialog) {
+            closeCredits();
+          }
+        });
+        document.addEventListener("keydown", function (event) {
+          if (event.key === "Escape" && !dialog.hidden) {
+            closeCredits();
+          }
+        });
+      })();
+    </script>
+    <script>
+      (function () {
+        const panel = document.getElementById("dev-console");
+        const output = document.getElementById("dev-console-output");
+        const input = document.getElementById("dev-console-input");
+        const form = document.getElementById("dev-console-form");
+        const closeButton = document.getElementById("dev-console-close");
+        const overlays = document.getElementById("mod-overlays");
+        const notice = document.getElementById("mod-notice");
+        const customNight = document.getElementById("custom-night");
+        const customNightButton = document.getElementById("custom-night-button");
+        const modToolbox = document.getElementById("mod-toolbox");
+        const modToolboxButton = document.getElementById("mod-toolbox-button");
+        const modToolboxContent = document.getElementById("mod-toolbox-content");
+        const customNightList = document.getElementById("custom-night-list");
+        const customModifiers = document.getElementById("custom-modifiers");
+        const customNightStatus = document.getElementById("custom-night-status");
+        const customMap = document.getElementById("custom-map");
+        const mapMarkers = document.getElementById("custom-map-markers");
+        const gameOverlay = document.getElementById("custom-game-overlay");
+        const listeners = new Map();
+        const overlayElements = new Map();
+        const mapMarkerElements = new Map();
+        const customAnimatronics = new Map();
+        const modAudio = new Map();
+        const audioBuses = new Map();
+        const pendingEvents = [];
+        let contentCatalog = {};
+        let bridge = null;
+        let modAudioContext = null;
+        let masterAudioGain = null;
+        let noticeTimer = 0;
+        const modifierDefinitions = [
+          ["noAudio", "Sin audio"],
+          ["infiniteAudio", "Señuelos de audio infinitos"],
+          ["powerOutage", "Apagón total"],
+          ["flashingLights", "Luces parpadeantes"],
+          ["acceleratedTime", "Tiempo acelerado"],
+          ["ultraLongNight", "Noche ultra larga"],
+          ["multiSpringtrap", "Multi-Springtrap"]
+        ];
+
+        function writeOutput(text) {
+          output.textContent += (output.textContent ? "\n" : "") + text;
+          output.scrollTop = output.scrollHeight;
+        }
+
+        function toggleConsole(forceOpen) {
+          const shouldOpen = typeof forceOpen === "boolean"
+            ? forceOpen
+            : panel.hidden;
+          panel.hidden = !shouldOpen;
+          if (shouldOpen) {
+            input.focus();
+          } else {
+            document.activeElement.blur();
+          }
+        }
+
+        function addOverlay(payload) {
+          if (!payload || typeof payload.id !== "string") {
+            return;
+          }
+          const card = document.createElement("div");
+          card.className = "mod-overlay";
+          const title = document.createElement("strong");
+          title.textContent = String(payload.title || "");
+          const text = document.createElement("span");
+          text.textContent = String(payload.text || "");
+          card.append(title, text);
+          const previous = overlayElements.get(payload.id);
+          if (previous) {
+            previous.remove();
+          }
+          overlayElements.set(payload.id, card);
+          overlays.append(card);
+        }
+
+        function showNotice(text) {
+          notice.textContent = String(text || "");
+          notice.hidden = false;
+          window.clearTimeout(noticeTimer);
+          noticeTimer = window.setTimeout(function () {
+            notice.hidden = true;
+          }, 5000);
+        }
+
+        function ensureAudioContext() {
+          if (!modAudioContext) {
+            const AudioContextConstructor =
+              window.AudioContext || window.webkitAudioContext;
+            if (!AudioContextConstructor) {
+              throw new Error("Web Audio API no está disponible en este navegador.");
+            }
+            modAudioContext = new AudioContextConstructor();
+            masterAudioGain = modAudioContext.createGain();
+            masterAudioGain.gain.value = 1;
+            masterAudioGain.connect(modAudioContext.destination);
+          }
+          return modAudioContext.resume().then(function () {
+            return modAudioContext;
+          });
+        }
+
+        function getAudioBus(name) {
+          const busName = String(name || "sfx");
+          if (!/^[a-zA-Z0-9_-]{1,32}$/.test(busName)) {
+            throw new Error("Nombre de bus de audio no válido.");
+          }
+          if (!audioBuses.has(busName)) {
+            const gain = modAudioContext.createGain();
+            gain.gain.value = 1;
+            gain.connect(masterAudioGain);
+            audioBuses.set(busName, gain);
+          }
+          return audioBuses.get(busName);
+        }
+
+        function setPannerPosition(panner, position) {
+          if (!Array.isArray(position) || position.length !== 3 ||
+              position.some(function (value) {
+                return !Number.isFinite(Number(value));
+              })) {
+            throw new Error("La posición de audio debe ser un vector [x, y, z].");
+          }
+          const coordinates = position.map(Number);
+          if (panner.positionX) {
+            panner.positionX.setTargetAtTime(
+              coordinates[0], modAudioContext.currentTime, 0.02
+            );
+            panner.positionY.setTargetAtTime(
+              coordinates[1], modAudioContext.currentTime, 0.02
+            );
+            panner.positionZ.setTargetAtTime(
+              coordinates[2], modAudioContext.currentTime, 0.02
+            );
+          } else {
+            panner.setPosition(coordinates[0], coordinates[1], coordinates[2]);
+          }
+        }
+
+        function setListenerTransform(transform) {
+          if (!transform || !Array.isArray(transform.position) ||
+              !Array.isArray(transform.forward) || !Array.isArray(transform.up) ||
+              transform.position.length !== 3 || transform.forward.length !== 3 ||
+              transform.up.length !== 3) {
+            throw new Error("El listener requiere position, forward y up de tres coordenadas.");
+          }
+          const listener = modAudioContext.listener;
+          const vectors = [transform.position, transform.forward, transform.up]
+            .map(function (vector) {
+              if (vector.some(function (value) {
+                return !Number.isFinite(Number(value));
+              })) {
+                throw new Error("El listener contiene coordenadas no numéricas.");
+              }
+              return vector.map(Number);
+            });
+          const position = vectors[0];
+          const forward = vectors[1];
+          const up = vectors[2];
+          if (listener.positionX) {
+            ["positionX", "positionY", "positionZ"].forEach(function (axis, index) {
+              listener[axis].setTargetAtTime(position[index], modAudioContext.currentTime, 0.02);
+            });
+            ["forwardX", "forwardY", "forwardZ"].forEach(function (axis, index) {
+              listener[axis].setTargetAtTime(forward[index], modAudioContext.currentTime, 0.02);
+            });
+            ["upX", "upY", "upZ"].forEach(function (axis, index) {
+              listener[axis].setTargetAtTime(up[index], modAudioContext.currentTime, 0.02);
+            });
+          } else {
+            listener.setPosition(position[0], position[1], position[2]);
+            listener.setOrientation(
+              forward[0], forward[1], forward[2], up[0], up[1], up[2]
+            );
+          }
+        }
+
+        function setSoundVolume(sound, volume, duration) {
+          const target = Number(volume);
+          if (!Number.isFinite(target) || target < 0 || target > 1) {
+            throw new Error("El volumen de audio debe estar entre 0.0 y 1.0.");
+          }
+          const seconds = Number(duration || 0);
+          if (!Number.isFinite(seconds) || seconds < 0) {
+            throw new Error("La duración de fade debe ser positiva.");
+          }
+          const gain = sound.gain.gain;
+          const now = modAudioContext.currentTime;
+          gain.cancelScheduledValues(now);
+          gain.setValueAtTime(gain.value, now);
+          if (seconds === 0) {
+            gain.setValueAtTime(target, now);
+          } else {
+            gain.linearRampToValueAtTime(target, now + seconds);
+          }
+          sound.options.volume = target;
+        }
+
+        function disposeModAudio(sound) {
+          if (modAudio.get(sound.id) === sound) {
+            modAudio.delete(sound.id);
+          }
+          sound.audio.pause();
+          sound.audio.removeAttribute("src");
+          sound.audio.load();
+          sound.source.disconnect();
+          sound.panner.disconnect();
+          sound.filters.forEach(function (filter) {
+            filter.disconnect();
+          });
+          sound.gain.disconnect();
+        }
+
+        function createAudioFilter(filterOptions) {
+          const allowedTypes = [
+            "lowpass", "highpass", "bandpass", "lowshelf",
+            "highshelf", "peaking", "notch", "allpass"
+          ];
+          const options = filterOptions || {};
+          const filter = modAudioContext.createBiquadFilter();
+          filter.type = allowedTypes.indexOf(options.type) >= 0
+            ? options.type
+            : "lowpass";
+          const frequency = Number(options.frequency || 22000);
+          const q = Number(options.q || 0.707);
+          const gain = Number(options.gain || 0);
+          filter.frequency.value = Math.max(20, Math.min(22000, frequency));
+          filter.Q.value = Math.max(0.0001, Math.min(100, q));
+          filter.gain.value = Math.max(-40, Math.min(40, gain));
+          return filter;
+        }
+
+        function playModAudio(options) {
+          const soundOptions = Object.assign({
+            loop: false,
+            volume: 1,
+            spatial: false,
+            position: [0, 0, 0],
+            bus: "sfx",
+            playbackRate: 1,
+            refDistance: 1,
+            maxDistance: 10000,
+            rolloffFactor: 1,
+            distanceModel: "inverse",
+            panningModel: "HRTF",
+            filters: []
+          }, options || {});
+          const soundId = String(soundOptions.id || "");
+          if (!/^[a-zA-Z0-9_.:-]{1,128}$/.test(soundId)) {
+            return Promise.reject(new Error("Cada audio necesita un id válido."));
+          }
+          let sourceUrl;
+          try {
+            sourceUrl = new URL(String(soundOptions.src || ""), window.location.href);
+          } catch (error) {
+            return Promise.reject(new Error("La ruta del audio no es válida."));
+          }
+          if (sourceUrl.origin !== window.location.origin ||
+              !/^\/(?:mods|resources)\//.test(sourceUrl.pathname) ||
+              !/\.mp3$/i.test(sourceUrl.pathname)) {
+            return Promise.reject(
+              new Error("El audio debe ser MP3 local de resources/ o mods/.")
+            );
+          }
+          if (!/^[a-zA-Z0-9_-]{1,32}$/.test(String(soundOptions.bus))) {
+            return Promise.reject(new Error("Nombre de bus de audio no válido."));
+          }
+          if (!Array.isArray(soundOptions.filters)) {
+            return Promise.reject(new Error("filters debe ser una lista de filtros."));
+          }
+          const oldSound = modAudio.get(soundId);
+          if (oldSound) {
+            disposeModAudio(oldSound);
+          }
+          return ensureAudioContext().then(function () {
+            const volume = Number(soundOptions.volume);
+            const playbackRate = Number(soundOptions.playbackRate);
+            if (!Number.isFinite(volume) || volume < 0 || volume > 1) {
+              throw new Error("El volumen de audio debe estar entre 0.0 y 1.0.");
+            }
+            if (!Number.isFinite(playbackRate) || playbackRate < 0.25 ||
+                playbackRate > 4) {
+              throw new Error("playbackRate debe estar entre 0.25 y 4.");
+            }
+            if (!Array.isArray(soundOptions.position) ||
+                soundOptions.position.length !== 3 ||
+                soundOptions.position.some(function (value) {
+                  return !Number.isFinite(Number(value));
+                })) {
+              throw new Error("La posición de audio debe ser un vector [x, y, z].");
+            }
+            const panner = modAudioContext.createPanner();
+            panner.panningModel =
+              soundOptions.panningModel === "equalpower" ? "equalpower" : "HRTF";
+            panner.distanceModel =
+              ["linear", "inverse", "exponential"].indexOf(
+                soundOptions.distanceModel
+              ) >= 0 ? soundOptions.distanceModel : "inverse";
+            const refDistance = Number(soundOptions.refDistance);
+            panner.refDistance = Number.isFinite(refDistance)
+              ? Math.max(0.01, refDistance)
+              : 1;
+            const maxDistance = Number(soundOptions.maxDistance);
+            panner.maxDistance = Number.isFinite(maxDistance)
+              ? Math.max(panner.refDistance, maxDistance)
+              : 10000;
+            const rolloff = Number(soundOptions.rolloffFactor);
+            panner.rolloffFactor = Number.isFinite(rolloff)
+              ? Math.max(0, Math.min(10, rolloff))
+              : 1;
+            const innerAngle = Number(soundOptions.coneInnerAngle);
+            panner.coneInnerAngle = Number.isFinite(innerAngle)
+              ? Math.max(0, Math.min(360, innerAngle))
+              : 360;
+            const outerAngle = Number(soundOptions.coneOuterAngle);
+            panner.coneOuterAngle = Number.isFinite(outerAngle)
+              ? Math.max(panner.coneInnerAngle, Math.min(360, outerAngle))
+              : 360;
+            const outerGain = Number(soundOptions.coneOuterGain);
+            panner.coneOuterGain = Number.isFinite(outerGain)
+              ? Math.max(0, Math.min(1, outerGain))
+              : 0;
+            const position = soundOptions.position.map(Number);
+            if (soundOptions.spatial) {
+              setPannerPosition(panner, position);
+              const orientation = soundOptions.orientation || [0, 0, 1];
+              if (!Array.isArray(orientation) || orientation.length !== 3 ||
+                  orientation.some(function (value) {
+                    return !Number.isFinite(Number(value));
+                  })) {
+                throw new Error("La orientación del audio debe ser un vector [x, y, z].");
+              }
+              const direction = orientation.map(Number);
+              if (panner.orientationX) {
+                panner.orientationX.value = direction[0];
+                panner.orientationY.value = direction[1];
+                panner.orientationZ.value = direction[2];
+              } else {
+                panner.setOrientation(direction[0], direction[1], direction[2]);
+              }
+            } else {
+              setPannerPosition(panner, [0, 0, -1]);
+            }
+
+            const audio = new Audio();
+            audio.crossOrigin = "anonymous";
+            audio.preload = "auto";
+            audio.src = sourceUrl.href;
+            audio.loop = Boolean(soundOptions.loop);
+            audio.playbackRate = playbackRate;
+            const source = modAudioContext.createMediaElementSource(audio);
+            const gain = modAudioContext.createGain();
+            gain.gain.value = volume;
+            const filters = (Array.isArray(soundOptions.filters)
+              ? soundOptions.filters
+              : []).map(createAudioFilter);
+            source.connect(panner);
+            let previousNode = panner;
+            filters.forEach(function (filter) {
+              previousNode.connect(filter);
+              previousNode = filter;
+            });
+            previousNode.connect(gain);
+            gain.connect(getAudioBus(soundOptions.bus));
+            const sound = {
+              id: soundId,
+              audio: audio,
+              source: source,
+              panner: panner,
+              gain: gain,
+              filters: filters,
+              position: position,
+              options: soundOptions
+            };
+            modAudio.set(soundId, sound);
+            audio.addEventListener("ended", function () {
+              if (!audio.loop && modAudio.get(soundId) === sound) {
+                disposeModAudio(sound);
+                window.FNAF3.api.emit("audio.ended", { id: soundId });
+              }
+            }, { once: true });
+            return audio.play().then(function () {
+              window.FNAF3.api.emit("audio.started", {
+                id: soundId,
+                position: position,
+                spatial: Boolean(soundOptions.spatial)
+              });
+              return soundId;
+            }).catch(function (error) {
+              disposeModAudio(sound);
+              throw error;
+            });
+          });
+        }
+
+        function handleAudioCommand(name, detail) {
+          const sound = modAudio.get(String(detail.id || ""));
+          if (name === "audio.play") {
+            playModAudio(detail).catch(function (error) {
+              console.error("No se pudo reproducir el audio del mod.", error);
+              window.FNAF3.api.emit("audio.error", {
+                id: detail.id,
+                message: error.message
+              });
+            });
+          } else if (name === "audio.listener") {
+            ensureAudioContext().then(function () {
+              setListenerTransform(detail);
+            }).catch(function (error) {
+              console.error("No se pudo actualizar el listener 3D.", error);
+            });
+          } else if (name === "audio.master-volume") {
+            ensureAudioContext().then(function () {
+              const volume = Number(detail.volume);
+              if (!Number.isFinite(volume) || volume < 0 || volume > 1) {
+                throw new Error("El volumen maestro debe estar entre 0.0 y 1.0.");
+              }
+              masterAudioGain.gain.setTargetAtTime(
+                volume, modAudioContext.currentTime, 0.02
+              );
+            }).catch(function (error) {
+              console.error("No se pudo actualizar el volumen maestro.", error);
+            });
+          } else if (name === "audio.bus-volume") {
+            ensureAudioContext().then(function () {
+              const volume = Number(detail.volume);
+              if (!Number.isFinite(volume) || volume < 0 || volume > 1) {
+                throw new Error("El volumen del bus debe estar entre 0.0 y 1.0.");
+              }
+              getAudioBus(detail.bus).gain.setTargetAtTime(
+                volume, modAudioContext.currentTime, 0.02
+              );
+            }).catch(function (error) {
+              console.error("No se pudo actualizar el bus de audio.", error);
+            });
+          } else if (name === "audio.stop-all") {
+            modAudio.forEach(function (sound) {
+              if (!detail.bus || sound.options.bus === detail.bus) {
+                handleAudioCommand("audio.stop", { id: sound.id });
+              }
+            });
+          } else if (sound && name === "audio.stop") {
+            disposeModAudio(sound);
+          } else if (sound && name === "audio.pause") {
+            sound.audio.pause();
+          } else if (sound && name === "audio.resume") {
+            ensureAudioContext().then(function () {
+              return sound.audio.play();
+            }).catch(function (error) {
+              console.error("No se pudo reanudar el audio.", error);
+            });
+          } else if (sound && name === "audio.position") {
+            if (Array.isArray(detail.position) && detail.position.length === 3) {
+              sound.position = detail.position.map(Number);
+              if (sound.options.spatial) {
+                setPannerPosition(sound.panner, sound.position);
+              }
+            }
+          } else if (sound && name === "audio.orientation") {
+            const direction = detail.orientation;
+            if (Array.isArray(direction) && direction.length === 3 &&
+                direction.every(function (value) {
+                  return Number.isFinite(Number(value));
+                })) {
+              const orientation = direction.map(Number);
+              if (sound.panner.orientationX) {
+                ["orientationX", "orientationY", "orientationZ"].forEach(
+                  function (axis, index) {
+                    sound.panner[axis].setTargetAtTime(
+                      orientation[index], modAudioContext.currentTime, 0.02
+                    );
+                  }
+                );
+              } else {
+                sound.panner.setOrientation(
+                  orientation[0], orientation[1], orientation[2]
+                );
+              }
+            }
+          } else if (sound && (name === "audio.volume" || name === "audio.fade")) {
+            setSoundVolume(
+              sound,
+              detail.volume,
+              name === "audio.fade" ? detail.duration : 0
+            );
+          } else if (sound && name === "audio.rate") {
+            const rate = Number(detail.playbackRate);
+            if (Number.isFinite(rate) && rate >= 0.25 && rate <= 4) {
+              sound.audio.playbackRate = rate;
+            }
+          } else if (sound && name === "audio.filter") {
+            const filter = sound.filters[Number(detail.index)];
+            if (filter && ["frequency", "Q", "gain"].indexOf(detail.parameter) >= 0) {
+              const value = Number(detail.value);
+              if (Number.isFinite(value)) {
+                const limits = {
+                  frequency: [20, 22000],
+                  Q: [0.0001, 100],
+                  gain: [-40, 40]
+                }[detail.parameter];
+                filter[detail.parameter].setTargetAtTime(
+                  Math.max(limits[0], Math.min(limits[1], value)),
+                  modAudioContext.currentTime,
+                  0.02
+                );
+              }
+            }
+          }
+        }
+
+        document.addEventListener("visibilitychange", function () {
+          if (!modAudioContext || modAudioContext.state === "closed") {
+            return;
+          }
+          if (document.hidden) {
+            modAudioContext.suspend().catch(function (error) {
+              console.warn("No se pudo pausar el audio de mods.", error);
+            });
+          } else if (modAudio.size) {
+            modAudioContext.resume().catch(function (error) {
+              console.warn("No se pudo reanudar el audio de mods.", error);
+            });
+          }
+        });
+
+        function callBridge(method, callback) {
+          if (!bridge) {
+            if (callback) {
+              callback(null);
+            }
+            return;
+          }
+          bridge[method](function (result) {
+            try {
+              callback(JSON.parse(result));
+            } catch (error) {
+              writeOutput("Respuesta inválida de " + method + ": " + error.message);
+            }
+          });
+        }
+
+        function refreshContent() {
+          callBridge("get_content", function (result) {
+            if (!result) {
+              return;
+            }
+            contentCatalog = result;
+            renderCustomNight();
+            renderModToolbox();
+            window.FNAF3.receive("content:updated", contentCatalog);
+          });
+        }
+
+        function loadClientMods() {
+          callBridge("get_client_mods", function (clientMods) {
+            if (!Array.isArray(clientMods)) {
+              return;
+            }
+            clientMods.forEach(function (mod) {
+              const script = document.createElement("script");
+              script.src = mod.url;
+              script.dataset.mod = mod.id;
+              script.onerror = function () {
+                writeOutput("No se pudo cargar el mod de navegador: " + mod.id);
+              };
+              document.head.append(script);
+            });
+          });
+        }
+
+        function renderCustomNight() {
+          customNightList.replaceChildren();
+          const entries = [{
+            id: "springtrap",
+            name: "Springtrap",
+            kind: "springtrap"
+          }].concat(contentCatalog.animatronics || []);
+          const seen = new Set();
+          entries.forEach(function (animatronic) {
+            if (seen.has(animatronic.id)) {
+              return;
+            }
+            seen.add(animatronic.id);
+            const wrapper = document.createElement("label");
+            wrapper.className = "custom-night-slider";
+            const name = document.createElement("span");
+            name.textContent = animatronic.name;
+            const value = document.createElement("output");
+            value.textContent = "0";
+            const slider = document.createElement("input");
+            slider.type = "range";
+            slider.min = "0";
+            slider.max = "20";
+            slider.value = "0";
+            slider.dataset.animatronic = animatronic.id;
+            slider.addEventListener("input", function () {
+              value.textContent = slider.value;
+            });
+            wrapper.append(name, value, slider);
+            customNightList.append(wrapper);
+          });
+
+          customModifiers.replaceChildren();
+          modifierDefinitions.forEach(function (modifier) {
+            const label = document.createElement("label");
+            label.className = "custom-night-modifier";
+            const checkbox = document.createElement("input");
+            checkbox.type = "checkbox";
+            checkbox.dataset.modifier = modifier[0];
+            const text = document.createElement("span");
+            text.textContent = modifier[1];
+            label.append(checkbox, text);
+            customModifiers.append(label);
+          });
+        }
+
+        function renderModToolbox() {
+          modToolboxContent.replaceChildren();
+          const sections = [
+            ["animatronics", "Animatrónicos y Phantoms", "animatronic.spawn"],
+            ["systems", "Sistemas de oficina", "system.failure"],
+            ["modes", "Modos de juego", "mode.start"],
+            ["minigames", "Minijuegos", "minigame.start"],
+            ["skins", "Skins", "skin.apply"],
+            ["effects", "Efectos de cámara", "camera.effect"]
+          ];
+          sections.forEach(function (section) {
+            const entries = contentCatalog[section[0]] || [];
+            if (!entries.length) {
+              return;
+            }
+            const group = document.createElement("section");
+            group.className = "mod-toolbox-category";
+            const heading = document.createElement("h3");
+            heading.textContent = section[1];
+            const items = document.createElement("div");
+            items.className = "mod-toolbox-category-items";
+            entries.forEach(function (entry) {
+              const button = document.createElement("button");
+              button.type = "button";
+              button.textContent = entry.name;
+              button.addEventListener("click", function () {
+                if (section[0] === "effects") {
+                  window.FNAF3.api.setCameraEffect(entry.effect || entry.id.split(":").pop());
+                  return;
+                }
+                const payload = {
+                  id: entry.id,
+                  name: entry.name,
+                  definition: entry
+                };
+                if (section[0] === "animatronics") {
+                  payload.instance = entry.id + ":" + Date.now();
+                  payload.camera = entry.start_room || "CAM 01";
+                }
+                window.FNAF3.api.trigger(section[2], payload);
+              });
+              items.append(button);
+            });
+            group.append(heading, items);
+            modToolboxContent.append(group);
+          });
+          if (!modToolboxContent.childElementCount) {
+            const empty = document.createElement("p");
+            empty.textContent = "No hay contenido de mods registrado.";
+            modToolboxContent.append(empty);
+          }
+        }
+
+        function setMapMarker(payload) {
+          if (!payload || typeof payload.id !== "string") {
+            return;
+          }
+          const marker = document.createElement("div");
+          marker.className = "custom-map-marker";
+          marker.textContent = String(payload.label || payload.id) +
+            " - " + String(payload.camera || "sin cámara");
+          const previous = mapMarkerElements.get(payload.id);
+          if (previous) {
+            previous.remove();
+          }
+          mapMarkerElements.set(payload.id, marker);
+          mapMarkers.append(marker);
+          customMap.hidden = false;
+        }
+
+        function removeMapMarker(payload) {
+          if (!payload || typeof payload.id !== "string") {
+            return;
+          }
+          const marker = mapMarkerElements.get(payload.id);
+          if (marker) {
+            marker.remove();
+            mapMarkerElements.delete(payload.id);
+          }
+          customMap.hidden = mapMarkerElements.size === 0;
+        }
+
+        function showCustomAnimatronic(payload) {
+          if (!payload || typeof payload.id !== "string") {
+            return;
+          }
+          const definitions = contentCatalog.animatronics || [];
+          const definition = definitions.find(function (item) {
+            return item.id === payload.id;
+          });
+          const element = document.createElement(
+            definition && definition.image ? "img" : "div"
+          );
+          element.className = "custom-animatronic";
+          if (element instanceof HTMLImageElement) {
+            element.src = definition.image;
+            element.alt = definition.name;
+          } else {
+            element.textContent = definition
+              ? definition.name
+              : String(payload.label || payload.id);
+            element.style.color = "#fff";
+            element.style.font = "bold 28px Arial";
+            element.style.textShadow = "0 2px 8px #000";
+          }
+          const previous = customAnimatronics.get(payload.instance || payload.id);
+          if (previous) {
+            previous.remove();
+          }
+          element.style.left = (30 + customAnimatronics.size * 18 % 50) + "%";
+          customAnimatronics.set(payload.instance || payload.id, element);
+          gameOverlay.append(element);
+        }
+
+        function triggerScare(payload) {
+          const allContent = (contentCatalog.animatronics || [])
+            .concat(contentCatalog.minigames || []);
+          const definition = allContent.find(function (item) {
+            return item.id === payload.id;
+          });
+          const scare = document.getElementById("custom-scare");
+          const image = document.getElementById("custom-scare-image");
+          const title = document.getElementById("custom-scare-title");
+          image.hidden = !definition || !definition.jumpscare_image;
+          if (!image.hidden) {
+            image.src = definition.jumpscare_image;
+            image.alt = definition.name;
+          } else {
+            image.removeAttribute("src");
+          }
+          title.textContent = definition ? definition.name : String(payload.id || "Jumpscare");
+          scare.hidden = false;
+          if (definition && definition.jumpscare_audio) {
+            const audio = new Audio(definition.jumpscare_audio);
+            audio.play().catch(function (error) {
+              console.warn("No se pudo reproducir el audio del jumpscare.", error);
+            });
+          }
+          window.setTimeout(function () {
+            scare.hidden = true;
+          }, 1600);
+        }
+
+        function applyGameCommand(payload) {
+          if (!payload || !payload.name) {
+            return;
+          }
+          const detail = payload.payload || {};
+          if (payload.name.indexOf("audio.") === 0) {
+            try {
+              handleAudioCommand(payload.name, detail);
+            } catch (error) {
+              console.error("Error en el comando de audio del mod.", error);
+              window.FNAF3.receive("audio:error", {
+                id: detail.id,
+                message: error.message
+              });
+            }
+          } else if (payload.name === "animatronic.spawn") {
+            showCustomAnimatronic(detail);
+            setMapMarker({
+              id: detail.instance || detail.id,
+              label: detail.label || detail.id,
+              camera: detail.camera
+            });
+          } else if (payload.name === "animatronic.remove") {
+            const id = detail.instance || detail.id;
+            const element = customAnimatronics.get(id);
+            if (element) {
+              element.remove();
+              customAnimatronics.delete(id);
+            }
+            removeMapMarker({ id: id });
+          } else if (payload.name === "map.marker") {
+            setMapMarker(detail);
+          } else if (payload.name === "map.marker.remove") {
+            removeMapMarker(detail);
+          } else if (payload.name === "camera.effect") {
+            const allowed = ["vhs", "night-vision", "distortion", "none"];
+            if (allowed.indexOf(detail.effect) !== -1) {
+              document.getElementById("game-container").dataset.cameraEffect =
+                detail.effect === "none" ? "" : detail.effect;
+            }
+          } else if (payload.name === "system.failure") {
+            showNotice("Falla: " + String(detail.name || detail.id || "sistema"));
+            window.FNAF3.receive("system.failure", detail);
+          } else if (payload.name === "jumpscare") {
+            triggerScare(detail);
+          } else if (payload.name === "night.start") {
+            customNight.hidden = true;
+            customNightStatus.textContent = "Desafío enviado a los mods activos.";
+            showNotice("Custom Night iniciado. Los mods recibirán la configuración.");
+            window.FNAF3.receive("night.start", detail);
+          } else if (payload.name === "night.skip") {
+            showNotice(
+              "Noche " + detail.night +
+              " marcada como superada para los mods; el progreso interno del juego no cambia."
+            );
+            window.FNAF3.receive("night.skip", detail);
+            window.FNAF3.receive("night.completed", detail);
+          } else if (payload.name === "camera.map") {
+            customMap.hidden = !detail.visible;
+          } else if (payload.name === "camera.flashing") {
+            document.getElementById("game-container").dataset.flashing =
+              detail.enabled ? "true" : "false";
+          }
+          window.FNAF3.receive("game:" + payload.name, detail);
+        }
+
+        function openCustomNight() {
+          refreshContent();
+          customNight.hidden = false;
+          customNightStatus.textContent = "";
+        }
+
+        function startCustomNight() {
+          const animatronics = {};
+          customNightList.querySelectorAll("[data-animatronic]").forEach(function (slider) {
+            animatronics[slider.dataset.animatronic] = Number(slider.value);
+          });
+          const modifiers = {};
+          customModifiers.querySelectorAll("[data-modifier]").forEach(function (checkbox) {
+            modifiers[checkbox.dataset.modifier] = checkbox.checked;
+          });
+          const config = {
+            animatronics: animatronics,
+            modifiers: modifiers,
+            startedAt: Date.now(),
+            source: "custom-night"
+          };
+          customNightStatus.textContent = "Enviando configuración...";
+          window.FNAF3.api.trigger("night.start", config);
+        }
+
+        window.FNAF3 = {
+          api: {
+            on: function (eventName, callback) {
+              if (!listeners.has(eventName)) {
+                listeners.set(eventName, new Set());
+              }
+              listeners.get(eventName).add(callback);
+              return function () {
+                listeners.get(eventName).delete(callback);
+              };
+            },
+            emit: function (eventName, payload) {
+              window.FNAF3.receive(eventName, payload);
+              if (bridge) {
+                bridge.post_event(eventName, JSON.stringify(payload || {}));
+              } else {
+                pendingEvents.push([eventName, payload || {}]);
+              }
+            },
+            notify: showNotice,
+            getContent: function (callback) {
+              callBridge("get_content", callback);
+            },
+            showCustomNight: openCustomNight,
+            trigger: function (name, payload) {
+              applyGameCommand({ name: name, payload: payload || {} });
+              if (bridge) {
+                bridge.post_event(name, JSON.stringify(payload || {}));
+              } else {
+                pendingEvents.push([name, payload || {}]);
+              }
+            },
+            playAudio: function (options) {
+              return playModAudio(options);
+            },
+            play3DAudio: function (id, src, position, options) {
+              return playModAudio(Object.assign({}, options || {}, {
+                id: id,
+                src: src,
+                position: position,
+                spatial: true
+              }));
+            },
+            setAudioListener: function (position, forward, up) {
+              const transform = {
+                position: position,
+                forward: forward || [0, 0, -1],
+                up: up || [0, 1, 0]
+              };
+              return ensureAudioContext().then(function () {
+                setListenerTransform(transform);
+              });
+            },
+            stopAllAudio: function (bus) {
+              applyGameCommand({
+                name: "audio.stop-all",
+                payload: { bus: bus || null }
+              });
+            },
+            setAudioPosition: function (id, position) {
+              applyGameCommand({
+                name: "audio.position",
+                payload: { id: id, position: position }
+              });
+            },
+            setAudioOrientation: function (id, orientation) {
+              applyGameCommand({
+                name: "audio.orientation",
+                payload: { id: id, orientation: orientation }
+              });
+            },
+            setAudioVolume: function (id, volume) {
+              applyGameCommand({
+                name: "audio.volume",
+                payload: { id: id, volume: volume }
+              });
+            },
+            fadeAudio: function (id, volume, duration) {
+              applyGameCommand({
+                name: "audio.fade",
+                payload: { id: id, volume: volume, duration: duration }
+              });
+            },
+            pauseAudio: function (id) {
+              applyGameCommand({ name: "audio.pause", payload: { id: id } });
+            },
+            resumeAudio: function (id) {
+              applyGameCommand({ name: "audio.resume", payload: { id: id } });
+            },
+            stopAudio: function (id) {
+              applyGameCommand({ name: "audio.stop", payload: { id: id } });
+            },
+            setMasterAudio: function (volume) {
+              applyGameCommand({
+                name: "audio.master-volume",
+                payload: { volume: volume }
+              });
+            },
+            fadeMasterAudio: function (volume, duration) {
+              const target = Number(volume);
+              const seconds = Number(duration);
+              if (!Number.isFinite(target) || target < 0 || target > 1 ||
+                  !Number.isFinite(seconds) || seconds < 0) {
+                return Promise.reject(
+                  new Error("Volumen 0–1 y duración positiva requeridos.")
+                );
+              }
+              return ensureAudioContext().then(function () {
+                const now = modAudioContext.currentTime;
+                masterAudioGain.gain.cancelScheduledValues(now);
+                masterAudioGain.gain.setValueAtTime(
+                  masterAudioGain.gain.value, now
+                );
+                masterAudioGain.gain.linearRampToValueAtTime(target, now + seconds);
+              });
+            },
+            resumeAudioContext: function () {
+              return ensureAudioContext();
+            },
+            suspendAudioContext: function () {
+              return modAudioContext
+                ? modAudioContext.suspend()
+                : Promise.resolve();
+            },
+            getAudioInfo: function () {
+              return modAudioContext
+                ? {
+                  state: modAudioContext.state,
+                  sampleRate: modAudioContext.sampleRate,
+                  activeSounds: Array.from(modAudio.keys()),
+                  buses: Array.from(audioBuses.keys())
+                }
+                : {
+                  state: "not-created",
+                  sampleRate: null,
+                  activeSounds: [],
+                  buses: []
+                };
+            },
+            setAudioBusVolume: function (bus, volume) {
+              applyGameCommand({
+                name: "audio.bus-volume",
+                payload: { bus: bus, volume: volume }
+              });
+            },
+            setAudioRate: function (id, playbackRate) {
+              applyGameCommand({
+                name: "audio.rate",
+                payload: { id: id, playbackRate: playbackRate }
+              });
+            },
+            setAudioFilter: function (id, index, parameter, value) {
+              applyGameCommand({
+                name: "audio.filter",
+                payload: {
+                  id: id,
+                  index: index,
+                  parameter: parameter,
+                  value: value
+                }
+              });
+            },
+            spawnAnimatronic: function (id, options) {
+              this.trigger("animatronic.spawn", Object.assign({ id: id }, options || {}));
+            },
+            removeAnimatronic: function (id, instance) {
+              this.trigger("animatronic.remove", { id: id, instance: instance || id });
+            },
+            setCameraEffect: function (effect, intensity) {
+              this.trigger("camera.effect", { effect: effect, intensity: intensity || 1 });
+            },
+            addMapMarker: function (id, label, camera, kind) {
+              this.trigger("map.marker", {
+                id: id, label: label, camera: camera, kind: kind || "animatronic"
+              });
+            },
+            removeMapMarker: function (id) {
+              this.trigger("map.marker.remove", { id: id });
+            },
+            triggerJumpscare: function (id) {
+              this.trigger("jumpscare", { id: id });
+            },
+            launchMinigame: function (id, data) {
+              this.trigger("minigame.start", Object.assign({ id: id }, data || {}));
+            },
+            applySkin: function (id, target) {
+              this.trigger("skin.apply", { id: id, target: target || null });
+            },
+            failSystem: function (id, name) {
+              this.trigger("system.failure", { id: id, name: name });
+            },
+            setFlashingLights: function (enabled) {
+              this.trigger("camera.flashing", { enabled: Boolean(enabled) });
+            },
+            showMap: function (visible) {
+              this.trigger("camera.map", { visible: visible !== false });
+            }
+          },
+          receive: function (eventName, payload) {
+            if (eventName === "mod:overlay:add") {
+              addOverlay(payload);
+            } else if (eventName === "mod:overlay:remove" && payload) {
+              const overlay = overlayElements.get(payload.id);
+              if (overlay) {
+                overlay.remove();
+                overlayElements.delete(payload.id);
+              }
+            } else if (eventName === "mod:notice" && payload) {
+              showNotice(payload.text);
+            } else if (eventName === "game:command") {
+              applyGameCommand(payload);
+            } else if (eventName === "content:updated") {
+              contentCatalog = payload || {};
+              renderCustomNight();
+            } else if (eventName === "ui:custom-night") {
+              openCustomNight();
+            } else if (eventName === "mod:remove" && payload) {
+              const prefix = payload.mod_id + ":";
+              overlayElements.forEach(function (element, id) {
+                if (id.indexOf(prefix) === 0) {
+                  element.remove();
+                  overlayElements.delete(id);
+                }
+              });
+            }
+            const callbacks = listeners.get(eventName);
+            if (callbacks) {
+              callbacks.forEach(function (callback) {
+                try {
+                  callback(payload);
+                } catch (error) {
+                  writeOutput("Error de extensión: " + error.message);
+                }
+              });
+            }
+          }
+        };
+
+        form.addEventListener("submit", function (event) {
+          event.preventDefault();
+          const command = input.value.trim();
+          input.value = "";
+          if (!command) {
+            return;
+          }
+          writeOutput("> " + command);
+          if (!bridge) {
+            writeOutput("La API del launcher todavía no está disponible.");
+            return;
+          }
+          bridge.execute_command(command, function (result) {
+            try {
+              const response = JSON.parse(result);
+              if (response.output === "__clear__") {
+                output.textContent = "";
+              } else if (response.output) {
+                writeOutput(response.output);
+              }
+            } catch (error) {
+              writeOutput("Respuesta inválida de la API: " + error.message);
+            }
+          });
+        });
+
+        closeButton.addEventListener("click", function () {
+          toggleConsole(false);
+        });
+        customNightButton.addEventListener("click", openCustomNight);
+        modToolboxButton.addEventListener("click", function () {
+          refreshContent();
+          modToolbox.hidden = false;
+        });
+        document.getElementById("mod-toolbox-close").addEventListener(
+          "click",
+          function () {
+            modToolbox.hidden = true;
+          }
+        );
+        document.getElementById("custom-night-close").addEventListener("click", function () {
+          customNight.hidden = true;
+        });
+        document.getElementById("custom-night-start").addEventListener(
+          "click",
+          startCustomNight
+        );
+        document.addEventListener("keydown", function (event) {
+          if (event.key === "F11") {
+            event.preventDefault();
+            event.stopPropagation();
+            const container = document.getElementById("game-container");
+            const isHidden = container.dataset.modUiHidden === "true";
+            container.dataset.modUiHidden = isHidden ? "false" : "true";
+            if (!isHidden && panel.contains(document.activeElement)) {
+              document.activeElement.blur();
+            }
+          } else if (event.key === "F12") {
+            event.preventDefault();
+            toggleConsole();
+          } else if (event.key === "Escape" && !panel.hidden) {
+            toggleConsole(false);
+          } else if (event.key === "Escape" && !customNight.hidden) {
+            customNight.hidden = true;
+          } else if (event.key === "Escape" && !modToolbox.hidden) {
+            modToolbox.hidden = true;
+          }
+        });
+
+        ["starting", "created", "error"].forEach(function (eventName) {
+          window.addEventListener("fnaf3:runtime:" + eventName, function (event) {
+            window.FNAF3.api.emit("runtime." + eventName, event.detail);
+          });
+        });
+        ["extension.loaded", "extension.error"].forEach(function (eventName) {
+          window.addEventListener("fnaf3:runtime:" + eventName, function (event) {
+            window.FNAF3.api.emit("runtime." + eventName, event.detail);
+          });
+        });
+
+        if (typeof qt !== "undefined" && typeof QWebChannel !== "undefined") {
+          new QWebChannel(qt.webChannelTransport, function (channel) {
+            bridge = channel.objects.modBridge;
+            bridge.post_event("bridge.ready", "{}", function () {
+              writeOutput("API de mods conectada. Escribe help para ver comandos.");
+              refreshContent();
+              loadClientMods();
+              pendingEvents.splice(0).forEach(function (pending) {
+                bridge.post_event(pending[0], JSON.stringify(pending[1]));
+              });
+            });
+          });
+        } else {
+          writeOutput("No se pudo conectar la consola al launcher PyQt6.");
+        }
+      })();
+    </script>
+    <script>
+        // RUNTIMESTART
+        // This is where the HTML5 runtime is actually started
+        window.addEventListener("load", windowLoaded, false);
+        async function windowLoaded()
+        {
+          const loading = document.getElementById("loading");
+          const message = document.getElementById("loading-message");
+          const progress = document.getElementById("loading-progress");
+          try
+          {
+            const manifestResponse = await fetch("resources/manifest.json");
+            if (!manifestResponse.ok)
+              throw new Error("No se pudo obtener la lista de audios.");
+            const audioFiles = await manifestResponse.json();
+            progress.max = Math.max(audioFiles.length, 1);
+            await Promise.all(audioFiles.map(async function (file)
+            {
+              const response = await fetch(file, { cache: "force-cache" });
+              if (!response.ok)
+                throw new Error("No se pudo cargar " + file);
+              await response.arrayBuffer();
+              progress.value += 1;
+              message.textContent = "Preparando audio " + progress.value +
+                " de " + audioFiles.length + "...";
+            }));
+
+            // Start the game only after its MP3 resources are available locally.
+            new Runtime("MMFCanvas", "resources/fnaf 3.cch");
+            window.FNAF3.api.emit("runtime.ready", {
+              canvasId: "MMFCanvas",
+              title: document.title
+            });
+            loading.hidden = true;
+            document.getElementById("credits-button").hidden = false;
+            document.getElementById("custom-night-button").hidden = false;
+            document.getElementById("mod-toolbox-button").hidden = false;
+          }
+          catch (error)
+          {
+            message.textContent = "Error al preparar el juego: " + error.message;
+            progress.hidden = true;
+            console.error("No se pudieron preparar los recursos del juego.", error);
+          }
+        }
+        // RUNTIMESTARTEND
+    </script>
+</body>
+</html>

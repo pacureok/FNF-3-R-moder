@@ -1,0 +1,78 @@
+{
+  "id": "example",
+  "name": "Mod de ejemplo",
+  "version": "1.0.0",
+  "enabled": true,
+  "entrypoint": "main.py",
+  "client_entrypoint": "client.js",
+  "settings": {
+    "greeting": "Hola desde un mod Python"
+  },
+  "content": {
+    "animatronics": [
+      {
+        "id": "phantom-bonnie",
+        "name": "Phantom Bonnie",
+        "kind": "phantom",
+        "description": "Un Phantom configurable que aparece como extensión visual y publica eventos de cámara.",
+        "max_aggression": 20,
+        "mechanics": ["camera-distortion", "custom-jumpscare"]
+      }
+    ],
+    "systems": [
+      {
+        "id": "temperature",
+        "name": "Control de temperatura",
+        "description": "Sistema de ejemplo para crear alertas y fallas personalizadas.",
+        "failure_event": "system.failure"
+      }
+    ],
+    "modes": [
+      {
+        "id": "multi-springtrap",
+        "name": "Multi-Springtrap",
+        "description": "Desafío de ejemplo que permite a los mods reaccionar a la cantidad de amenazas.",
+        "max_instances": 5
+      }
+    ],
+    "minigames": [
+      {
+        "id": "memory-8bit",
+        "name": "Recuerdo 8-bit",
+        "description": "Plantilla de minijuego: el mod puede escuchar minigame.start y añadir su propia lógica."
+      }
+    ],
+    "skins": [
+      {
+        "id": "springtrap-classic",
+        "name": "Springtrap clásico",
+        "target": "springtrap",
+        "description": "Punto de registro para una textura o skin suministrada por un mod."
+      },
+      {
+        "id": "scraptrap",
+        "name": "Scraptrap",
+        "target": "springtrap",
+        "description": "Punto de registro para una textura o skin suministrada por un mod."
+      }
+    ],
+    "effects": [
+      {
+        "id": "vhs",
+        "name": "Filtro VHS",
+        "effect": "vhs"
+      },
+      {
+        "id": "night-vision",
+        "name": "Visión nocturna",
+        "effect": "night-vision"
+      },
+      {
+        "id": "distortion",
+        "name": "Distorsión de cámara",
+        "effect": "distortion"
+      }
+    ]
+  },
+  "overlays": []
+}
